@@ -123,6 +123,7 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
     static Map<String, Integer> callNotificationMap;
 
     private RegistrationListener registrationListener = registrationListener();
+    private UnregistrationListener unRegistrationListener = unRegistrationListener();
     private Call.Listener callListener = callListener();
 
     private CallInvite activeCallInvite;
