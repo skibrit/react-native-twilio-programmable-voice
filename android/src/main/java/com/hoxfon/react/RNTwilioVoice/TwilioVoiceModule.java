@@ -52,6 +52,7 @@ import com.twilio.voice.ConnectOptions;
 import com.twilio.voice.LogLevel;
 import com.twilio.voice.RegistrationException;
 import com.twilio.voice.RegistrationListener;
+import com.twilio.voice.UnregistrationListener;
 import com.twilio.voice.Voice;
 
 import java.util.HashMap;
@@ -66,10 +67,14 @@ import static com.hoxfon.react.RNTwilioVoice.EventManager.EVENT_CALL_STATE_RINGI
 import static com.hoxfon.react.RNTwilioVoice.EventManager.EVENT_CALL_INVITE_CANCELLED;
 import static com.hoxfon.react.RNTwilioVoice.EventManager.EVENT_CONNECTION_IS_RECONNECTING;
 import static com.hoxfon.react.RNTwilioVoice.EventManager.EVENT_CONNECTION_DID_RECONNECT;
+import static com.hoxfon.react.RNTwilioVoice.EventManager.EVENT_UNREGISTER_SUCCESSFUL;
+import static com.hoxfon.react.RNTwilioVoice.EventManager.EVENT_UNREGISTER_UNSUCCESSFUL;
 
 public class TwilioVoiceModule extends ReactContextBaseJavaModule implements ActivityEventListener, LifecycleEventListener {
 
     public static String TAG = "RNTwilioVoice";
+
+    private static String FCM_TOKEN = null;
 
     private static final int MIC_PERMISSION_REQUEST_CODE = 1;
 
@@ -221,6 +226,26 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
                 WritableMap params = Arguments.createMap();
                 params.putString("err", error.getMessage());
                 eventManager.sendEvent(EVENT_DEVICE_NOT_READY, params);
+            }
+        };
+    }
+
+    private UnregistrationListener unRegistrationListener() {
+        return new UnregistrationListener() {
+            @Override
+            public void onUnregistered(String accessToken, String fcmToken) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "Successfully Unregistered FCM");
+                }
+                eventManager.sendEvent(EVENT_UNREGISTER_SUCCESSFUL, null);
+            }
+
+            @Override
+            public void onError(RegistrationException error, String accessToken, String fcmToken) {
+                Log.e(TAG, String.format("UnRegistration Error: %d, %s", error.getErrorCode(), error.getMessage()));
+                WritableMap params = Arguments.createMap();
+                params.putString("err", error.getMessage());
+                eventManager.sendEvent(EVENT_UNREGISTER_UNSUCCESSFUL, params);
             }
         };
     }
@@ -612,6 +637,7 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
                             if (BuildConfig.DEBUG) {
                                 Log.d(TAG, "Registering with FCM");
                             }
+                            FCM_TOKEN = fcmToken;
                             Voice.register(accessToken, Voice.RegistrationChannel.FCM, fcmToken, registrationListener);
                         }
                     }
@@ -747,6 +773,12 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
             activeCall.disconnect();
             activeCall = null;
         }
+    }
+
+    @ReactMethod
+    public void unregister() {
+       Log.d(TAG, "Unregistering");
+       Voice.unregister(TwilioVoiceModule.this.accessToken, Voice.RegistrationChannel.FCM, FCM_TOKEN, unRegistrationListener);
     }
 
     @ReactMethod

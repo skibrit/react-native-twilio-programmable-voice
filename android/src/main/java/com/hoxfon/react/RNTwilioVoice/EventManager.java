@@ -25,7 +25,8 @@ public class EventManager {
     public static final String EVENT_CALL_INVITE_CANCELLED = "callInviteCancelled";
     public static final String EVENT_CONNECTION_IS_RECONNECTING = "connectionIsReconnecting";
     public static final String EVENT_CONNECTION_DID_RECONNECT = "connectionDidReconnect";
-
+    public static final String EVENT_UNREGISTER_SUCCESSFUL = "deviceUnregistered";
+    public static final String EVENT_UNREGISTER_UNSUCCESSFUL = "deviceUnregisterFailed";
 
     public EventManager(ReactApplicationContext context) {
         mContext = context;
