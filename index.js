@@ -22,6 +22,8 @@ const _eventHandlers = {
     callStateRinging: new Map(),
     callInviteCancelled: new Map(),
     callRejected: new Map(),
+    deviceUnregistered:new Map(),
+    deviceUnregisterFailed:new Map()
 }
 
 const Twilio = {
